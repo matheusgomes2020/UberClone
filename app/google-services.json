@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "615931393692",
+    "project_id": "uber-e6e3b",
+    "storage_bucket": "uber-e6e3b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:615931393692:android:b14e472f2b06e1155ddf59",
+        "android_client_info": {
+          "package_name": "matheusgomes.cursoandroid.uber"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "615931393692-n4cnivj38tbgha1k9sbbo1di01p6lohc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "matheusgomes.cursoandroid.uber",
+            "certificate_hash": "b2b8621b3e46acf7fd30866f49958332c8c9d6c9"
+          }
+        },
+        {
+          "client_id": "615931393692-c3b217u0dtae88b63fe5rlcltkp8n9b0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUgxUCFaM-735MNf4Ck6WsACsVY63ODnM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "615931393692-c3b217u0dtae88b63fe5rlcltkp8n9b0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
