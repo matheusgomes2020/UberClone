@@ -3,6 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="matheusgomes.cursoandroid.uber">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-feature android:name="android.hardware.location.gps" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -14,10 +19,12 @@
         android:theme="@style/Theme.Uber"
         tools:targetApi="31">
         <activity
-            android:name=".activity.RequisicoesActivity"
-            android:exported="false" />
+            android:name=".activity.PassageiroActivity"
+            android:exported="false"
+            android:label="@string/title_activity_passageiro"
+            android:theme="@style/Theme.Uber.NoActionBar" />
         <activity
-            android:name=".activity.MapsActivity"
+            android:name=".activity.RequisicoesActivity"
             android:exported="false" />
         <!--
              TODO: Before you run your application, you need a Google Maps API key.
@@ -32,7 +39,7 @@
         -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_API_KEY" />
+            android:value="AIzaSyCdfNfD15n8tcuDgwvAnCuz9RpLMlcMyFU" />
 
         <activity
             android:name=".activity.MainActivity"
