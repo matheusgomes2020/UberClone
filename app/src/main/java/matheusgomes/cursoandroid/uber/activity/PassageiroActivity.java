@@ -44,7 +44,10 @@ import java.util.Locale;
 import matheusgomes.cursoandroid.uber.R;
 import matheusgomes.cursoandroid.uber.config.ConfiguracaoFirebase;
 import matheusgomes.cursoandroid.uber.databinding.ActivityPassageiroBinding;
+import matheusgomes.cursoandroid.uber.helper.UsuarioFirebase;
 import matheusgomes.cursoandroid.uber.model.Destino;
+import matheusgomes.cursoandroid.uber.model.Requisicao;
+import matheusgomes.cursoandroid.uber.model.Usuario;
 
 public class PassageiroActivity extends AppCompatActivity
         implements OnMapReadyCallback {
@@ -56,6 +59,8 @@ public class PassageiroActivity extends AppCompatActivity
     private LocationManager locationManager;
 
     private LocationListener locationListener;
+
+    private LatLng localPassageiro;
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityPassageiroBinding binding;
@@ -125,7 +130,7 @@ public class PassageiroActivity extends AppCompatActivity
                 mensagem.append( "\nRua: " + destino.getRua() );
                 mensagem.append( "\nBairro: " + destino.getBairro() );
                 mensagem.append( "\nNúmero: " + destino.getNumero() );
-                mensagem.append( "\nCep: " + destino.getCep() );
+                mensagem.append( "\n Cep: " + destino.getCep() );
 
                 AlertDialog.Builder builder = new AlertDialog.Builder( this )
                         .setTitle( "Confirme seu endereço!" )
@@ -135,6 +140,7 @@ public class PassageiroActivity extends AppCompatActivity
                             public void onClick(DialogInterface dialogInterface, int i) {
 
                                 //Salvar requisição
+                                salvarRequisicao(  destino );
 
                             }
                         }).setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
@@ -152,6 +158,21 @@ public class PassageiroActivity extends AppCompatActivity
         }else {
             Toast.makeText(this, "Informe o endereço de destino!", Toast.LENGTH_SHORT).show();
         }
+
+    }
+
+    private void salvarRequisicao(Destino destino) {
+
+        Requisicao requisicao = new Requisicao();
+        requisicao.setDestino( destino );
+
+        Usuario usuarioPassageiro = UsuarioFirebase.getDadosUsuarioLogado();
+        usuarioPassageiro.setLatidude( String.valueOf( localPassageiro.latitude ) );
+        usuarioPassageiro.setLongitude( String.valueOf( localPassageiro.longitude ) );
+
+        requisicao.setPassageiro( usuarioPassageiro );
+        requisicao.setStatus( Requisicao.STATUS_AGUARDANDO );
+        requisicao.salvar();
 
     }
 
@@ -187,17 +208,17 @@ public class PassageiroActivity extends AppCompatActivity
                 //recuperar latitude e longitude
                 double latitude = location.getLatitude();
                 double longitude = location.getLongitude();
-                LatLng meuLocal = new LatLng(latitude, longitude);
+                localPassageiro = new LatLng(latitude, longitude);
 
                 mMap.clear();
                 mMap.addMarker(
                         new MarkerOptions()
-                                .position(meuLocal)
+                                .position( localPassageiro )
                                 .title("Meu Local")
                                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.usuario))
                 );
                 mMap.moveCamera(
-                        CameraUpdateFactory.newLatLngZoom(meuLocal, 20)
+                        CameraUpdateFactory.newLatLngZoom( localPassageiro, 20 )
                 );
 
             }
