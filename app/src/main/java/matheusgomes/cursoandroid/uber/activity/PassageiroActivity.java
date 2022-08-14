@@ -20,11 +20,17 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,6 +44,8 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -62,6 +70,12 @@ public class PassageiroActivity extends AppCompatActivity
 
     private LatLng localPassageiro;
 
+    private Boolean uberChamado = false;
+
+    private DatabaseReference firbaseRef;
+
+    private Requisicao requisicao;
+
     private AppBarConfiguration appBarConfiguration;
     private ActivityPassageiroBinding binding;
 
@@ -77,11 +91,61 @@ public class PassageiroActivity extends AppCompatActivity
 
         //Configurações iniciais
         autenticacao = ConfiguracaoFirebase.getFirebaseAutenticacao();
+        firbaseRef = ConfiguracaoFirebase.getFirebaseDatabase();
+
+        //Adiciona listener para status da requisição
+        verificaStatusRequisicao();
+
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+    }
+
+    private void verificaStatusRequisicao() {
+
+        Usuario usuarioLogado = UsuarioFirebase.getDadosUsuarioLogado();
+        DatabaseReference requisicoes = firbaseRef.child( "requisicoes" );
+        Query requisicaoPesquisa = requisicoes.orderByChild( "passageiro/id" )
+                .equalTo( usuarioLogado.getId() );
+
+        requisicaoPesquisa.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                List<Requisicao> lista = new ArrayList<>();
+                for ( DataSnapshot ds : snapshot.getChildren() ){
+
+                    requisicao = ds.getValue( Requisicao.class );
+                    lista.add( requisicao );
+
+                }
+
+                Collections.reverse( lista );
+                if ( lista != null && lista.size() > 0 ){
+
+                    requisicao = lista.get( 0 );
+
+                    switch ( requisicao.getStatus() ){
+
+                        case Requisicao.STATUS_AGUARDANDO :
+                            binding.linearLayoutDestino.setVisibility( View.GONE );
+                            binding.buttonChamarUber.setText( "Cancelar Uber" );
+                            uberChamado = true;
+                            break;
+
+                    }
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
     }
 
@@ -107,56 +171,65 @@ public class PassageiroActivity extends AppCompatActivity
 
     public void chamarUber( View view ){
 
-        String enderecoDEstino = binding.editDestino.getText().toString();
+        if ( !uberChamado ){//Uber não foi chamado
+            String enderecoDEstino = binding.editDestino.getText().toString();
 
 
-        if ( !enderecoDEstino.equals("")  || enderecoDEstino != null ){
+            if ( !enderecoDEstino.equals("")  || enderecoDEstino != null ){
 
-            Address addressDestino = repuperarEndereco( enderecoDEstino );
+                Address addressDestino = repuperarEndereco( enderecoDEstino );
 
-            if ( addressDestino != null ){
+                if ( addressDestino != null ){
 
-                Destino destino = new Destino();
-                destino.setCidade( addressDestino.getAdminArea() );
-                destino.setCep( addressDestino.getPostalCode() );
-                destino.setBairro( addressDestino.getSubLocality() );
-                destino.setRua( addressDestino.getThoroughfare() );
-                destino.setNumero( addressDestino.getFeatureName() );
-                destino.setLatitude( String.valueOf( addressDestino.getLatitude() ) );
-                destino.setLongitude( String.valueOf( addressDestino.getLongitude() ) );
+                    Destino destino = new Destino();
+                    destino.setCidade( addressDestino.getAdminArea() );
+                    destino.setCep( addressDestino.getPostalCode() );
+                    destino.setBairro( addressDestino.getSubLocality() );
+                    destino.setRua( addressDestino.getThoroughfare() );
+                    destino.setNumero( addressDestino.getFeatureName() );
+                    destino.setLatitude( String.valueOf( addressDestino.getLatitude() ) );
+                    destino.setLongitude( String.valueOf( addressDestino.getLongitude() ) );
 
-                StringBuilder mensagem = new StringBuilder();
-                mensagem.append( "Cidade: " + destino.getCidade() );
-                mensagem.append( "\nRua: " + destino.getRua() );
-                mensagem.append( "\nBairro: " + destino.getBairro() );
-                mensagem.append( "\nNúmero: " + destino.getNumero() );
-                mensagem.append( "\n Cep: " + destino.getCep() );
+                    StringBuilder mensagem = new StringBuilder();
+                    mensagem.append( "Cidade: " + destino.getCidade() );
+                    mensagem.append( "\nRua: " + destino.getRua() );
+                    mensagem.append( "\nBairro: " + destino.getBairro() );
+                    mensagem.append( "\nNúmero: " + destino.getNumero() );
+                    mensagem.append( "\n Cep: " + destino.getCep() );
 
-                AlertDialog.Builder builder = new AlertDialog.Builder( this )
-                        .setTitle( "Confirme seu endereço!" )
-                        .setMessage( mensagem )
-                        .setPositiveButton("COnfirmar", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder( this )
+                            .setTitle( "Confirme seu endereço!" )
+                            .setMessage( mensagem )
+                            .setPositiveButton("COnfirmar", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
 
-                                //Salvar requisição
-                                salvarRequisicao(  destino );
+                                    //Salvar requisição
+                                    salvarRequisicao(  destino );
+                                    uberChamado = true;
 
-                            }
-                        }).setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
+                                }
+                            }).setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
 
-                            }
-                        });
+                                }
+                            });
 
-                AlertDialog dialog = builder.create();
-                dialog.show();
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
 
+                }
+
+            }else {
+                Toast.makeText(this, "Informe o endereço de destino!", Toast.LENGTH_SHORT).show();
             }
 
+
         }else {
-            Toast.makeText(this, "Informe o endereço de destino!", Toast.LENGTH_SHORT).show();
+            //Cancelar a requisição
+
+            uberChamado = false;
         }
 
     }
@@ -173,6 +246,9 @@ public class PassageiroActivity extends AppCompatActivity
         requisicao.setPassageiro( usuarioPassageiro );
         requisicao.setStatus( Requisicao.STATUS_AGUARDANDO );
         requisicao.salvar();
+
+        binding.linearLayoutDestino.setVisibility( View.GONE );
+        binding.buttonChamarUber.setText( "Cancelar Uber" );
 
     }
 
