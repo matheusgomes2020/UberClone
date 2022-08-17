@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "615931393692",
+    "firebase_url": "https://uber-e6e3b-default-rtdb.firebaseio.com",
     "project_id": "uber-e6e3b",
     "storage_bucket": "uber-e6e3b.appspot.com"
   },
@@ -13,6 +14,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "615931393692-baej1ap2tc3m22i4ee78d9rrjcmnmg7q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "matheusgomes.cursoandroid.uber",
+            "certificate_hash": "baf8475849105fa38b42688b2aaef2b0889f5a06"
+          }
+        },
         {
           "client_id": "615931393692-n4cnivj38tbgha1k9sbbo1di01p6lohc.apps.googleusercontent.com",
           "client_type": 1,
