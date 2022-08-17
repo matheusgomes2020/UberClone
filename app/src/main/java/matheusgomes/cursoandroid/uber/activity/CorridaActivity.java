@@ -17,7 +17,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.View;
@@ -30,7 +35,10 @@ import androidx.navigation.ui.NavigationUI;
 
 
 import matheusgomes.cursoandroid.uber.R;
+import matheusgomes.cursoandroid.uber.config.ConfiguracaoFirebase;
 import matheusgomes.cursoandroid.uber.databinding.ActivityCorridaBinding;
+import matheusgomes.cursoandroid.uber.model.Requisicao;
+import matheusgomes.cursoandroid.uber.model.Usuario;
 
 public class CorridaActivity extends AppCompatActivity
         implements OnMapReadyCallback {
@@ -45,6 +53,14 @@ public class CorridaActivity extends AppCompatActivity
 
     private LatLng localMotorista;
 
+    private Requisicao requisicao;
+
+    private Usuario motorista;
+
+    private String idRequisicao;
+
+    private DatabaseReference firbaseRef;
+
     private AppBarConfiguration appBarConfiguration;
     private ActivityCorridaBinding binding;
 
@@ -56,6 +72,8 @@ public class CorridaActivity extends AppCompatActivity
         setContentView(binding.getRoot());
         binding.toolbar.setTitle("Iniciar corrida");
 
+        firbaseRef = ConfiguracaoFirebase.getFirebaseDatabase();
+
         setSupportActionBar(binding.toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled( true );
 
@@ -63,6 +81,63 @@ public class CorridaActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        if ( getIntent().getExtras().containsKey( "idRequisicao" )
+        && getIntent().getExtras().containsKey( "motorista" ) ){
+
+            Bundle extras = getIntent().getExtras();
+            motorista = ( Usuario ) extras.getSerializable( "motorista" );
+
+            idRequisicao = extras.getString( "idRequisicao" );
+            verificaStatusRequisicao();
+
+        }
+
+    }
+
+    private void verificaStatusRequisicao() {
+
+        DatabaseReference requisicoes = firbaseRef.child( "requisicoes" )
+                .child( idRequisicao );
+
+        requisicoes.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                //recupera requisição
+                requisicao = snapshot.getValue( Requisicao.class );
+
+                switch ( requisicao.getStatus() ){
+
+                    case Requisicao.STATUS_AGUARDANDO :
+                        requisicaoAguardando();
+                        break;
+
+                    case Requisicao.STATUS_A_CAMINHO :
+                        requisicaoACaminho();
+                        break;
+
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+    }
+
+    private void requisicaoAguardando() {
+
+        binding.buttonAceitarCorrida.setText( "Aceitar corrida" );
+
+    }
+
+    private void requisicaoACaminho() {
+
+        binding.buttonAceitarCorrida.setText( "A caminho do passageiro" );
 
     }
 
@@ -140,6 +215,16 @@ public class CorridaActivity extends AppCompatActivity
     }
 
     public void aceitarCorrida( View view ){
+
+        //Configura requisicao
+        requisicao = new Requisicao();
+        requisicao.setId( idRequisicao );
+        requisicao.setMotorista( motorista );
+        requisicao.setStatus( Requisicao.STATUS_A_CAMINHO );
+
+        requisicao.atualizar();
+
+
 
     }
 

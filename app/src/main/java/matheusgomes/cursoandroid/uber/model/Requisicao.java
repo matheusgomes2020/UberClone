@@ -2,6 +2,9 @@ package matheusgomes.cursoandroid.uber.model;
 
 import com.google.firebase.database.DatabaseReference;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import matheusgomes.cursoandroid.uber.config.ConfiguracaoFirebase;
 
 public class Requisicao {
@@ -29,6 +32,21 @@ public class Requisicao {
         setId( idRequisicao );
 
         requisicoes.child( getId() ).setValue( this );
+
+    }
+
+    public void atualizar(){
+
+        DatabaseReference firebaseRef = ConfiguracaoFirebase.getFirebaseDatabase();
+        DatabaseReference requisicoes = firebaseRef.child( "requisicoes" );
+
+        DatabaseReference requisicao = requisicoes.child( getId() );
+
+        Map objeto = new HashMap();
+        objeto.put( "motorista", getMotorista() );
+        objeto.put( "status", getStatus() );
+
+        requisicao.updateChildren( objeto );
 
     }
 

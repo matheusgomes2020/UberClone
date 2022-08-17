@@ -189,6 +189,8 @@ public class RequisicoesActivity extends AppCompatActivity {
                     binding.recyclerRequisicoes.setVisibility( View.GONE);
                 }
 
+                listaRequisicoes.clear();
+
                 for ( DataSnapshot ds : snapshot.getChildren() ){
 
                     Requisicao requisicao = ds.getValue( Requisicao.class );
