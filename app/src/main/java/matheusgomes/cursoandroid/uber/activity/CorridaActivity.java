@@ -14,6 +14,8 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
@@ -53,13 +55,20 @@ public class CorridaActivity extends AppCompatActivity
 
     private LatLng localMotorista;
 
+    private LatLng localpassageiro;
+
     private Requisicao requisicao;
 
     private Usuario motorista;
 
+    private Usuario passageiro;
+
     private String idRequisicao;
 
     private DatabaseReference firbaseRef;
+
+    private Marker marcadorMotorista;
+    private Marker marcadorPassageiro;
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityCorridaBinding binding;
@@ -106,6 +115,11 @@ public class CorridaActivity extends AppCompatActivity
 
                 //recupera requisição
                 requisicao = snapshot.getValue( Requisicao.class );
+                passageiro = requisicao.getPassageiro();
+                localpassageiro = new LatLng(
+                        Double.parseDouble( passageiro.getLatidude() ),
+                        Double.parseDouble( passageiro.getLongitude() )
+                );
 
                 switch ( requisicao.getStatus() ){
 
@@ -138,6 +152,65 @@ public class CorridaActivity extends AppCompatActivity
     private void requisicaoACaminho() {
 
         binding.buttonAceitarCorrida.setText( "A caminho do passageiro" );
+
+        //Exibe marcador do motorista
+        adicionarMarcadorMotorista( localMotorista, motorista.getNome() );
+
+        //Exibe marcador do passageiro
+        adicionarMarcadorPassageiro( localpassageiro, passageiro.getNome() );
+
+        //Centralizar dois marcadores
+        centralizarDoisMarcadores( marcadorMotorista, marcadorPassageiro );
+
+    }
+
+    private void centralizarDoisMarcadores( Marker marcador1, Marker marcador2 ) {
+
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+        builder.include( marcador1.getPosition() );
+        builder.include( marcador2.getPosition() );
+
+        LatLngBounds bounds = builder.build();
+
+
+        int largura = getResources().getDisplayMetrics().widthPixels;
+        int altura = getResources().getDisplayMetrics().heightPixels;
+        int espacoInterno = ( int )  (largura * 0.20);
+
+        mMap.moveCamera(
+                CameraUpdateFactory.newLatLngBounds( bounds, largura, altura, espacoInterno ));
+
+
+    }
+
+    private void adicionarMarcadorMotorista( LatLng localizacao, String titulo ){
+
+        if ( marcadorPassageiro != null ){
+            marcadorPassageiro.remove();
+        }
+
+        marcadorPassageiro = mMap.addMarker(
+                new MarkerOptions()
+                        .position( localizacao )
+                        .title( titulo )
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.carro))
+        );
+
+    }
+
+    private void adicionarMarcadorPassageiro( LatLng localizacao, String titulo ){
+
+        if ( marcadorMotorista != null ){
+            marcadorMotorista.remove();
+        }
+
+        marcadorMotorista = mMap.addMarker(
+                new MarkerOptions()
+                        .position( localizacao )
+                        .title( titulo )
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.usuario))
+        );
 
     }
 
