@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 
 import com.firebase.geofire.GeoFire;
@@ -116,6 +117,40 @@ public class CorridaActivity extends AppCompatActivity
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        binding.fabRota.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                String status = statusRequisicao;
+
+                if ( status != null && status.isEmpty() ){
+
+                    String lat = "";
+                    String lon = "";
+
+                    switch ( status ){
+                        case Requisicao.STATUS_A_CAMINHO :
+                            lat = String.valueOf( localpassageiro.latitude );
+                            lon = String.valueOf( localpassageiro.longitude );
+                            break;
+                        case Requisicao.STATUS_VIAGEM :
+
+                            break;
+                    }
+
+                    //Abrir rota
+                    String latLong = lat + "," + lon;
+                    Uri uri = Uri.parse("google.navigation:q=" + latLong + "&mode=d");
+                    Intent i = new Intent(Intent.ACTION_VIEW, uri);
+                    i.setPackage("com.google.android.apps.maps");
+                    startActivity( i );
+
+
+                }
+
+            }
+        });
+
         //Recupera dados do usuário
         if( getIntent().getExtras().containsKey("idRequisicao")
                 && getIntent().getExtras().containsKey("motorista") ){
@@ -180,6 +215,7 @@ public class CorridaActivity extends AppCompatActivity
 
     private void requisicaoACaminho(){
         binding.buttonAceitarCorrida.setText("A caminho do passageiro");
+        binding.fabRota.setVisibility( View.VISIBLE );
 
         //Exibe marcador do motorista
         adicionaMarcadorMotorista(localMotorista, motorista.getNome() );
