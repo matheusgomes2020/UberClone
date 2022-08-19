@@ -286,6 +286,9 @@ public class PassageiroActivity extends AppCompatActivity
                 double longitude = location.getLongitude();
                 localPassageiro = new LatLng(latitude, longitude);
 
+                //Atualizar Geofire
+                UsuarioFirebase.atualizarDadosLocalizacao( latitude, longitude );
+
                 mMap.clear();
                 mMap.addMarker(
                         new MarkerOptions()

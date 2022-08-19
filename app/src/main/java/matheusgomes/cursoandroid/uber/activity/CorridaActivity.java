@@ -41,11 +41,21 @@ import androidx.navigation.ui.NavigationUI;
 import matheusgomes.cursoandroid.uber.R;
 import matheusgomes.cursoandroid.uber.config.ConfiguracaoFirebase;
 import matheusgomes.cursoandroid.uber.databinding.ActivityCorridaBinding;
+import matheusgomes.cursoandroid.uber.helper.UsuarioFirebase;
 import matheusgomes.cursoandroid.uber.model.Requisicao;
 import matheusgomes.cursoandroid.uber.model.Usuario;
 
 public class CorridaActivity extends AppCompatActivity
         implements OnMapReadyCallback {
+
+    /*
+    * Lat/lon destino: -22.87514269288448, -47.149738491208694 (R. Nossa Sra. da Conceição, 30)
+    * Lat/lon passageiro: -22.876618029681712, -47.143291802153826
+    * Lat/lon motorista (a caminho)
+    *   inicial: -22.872710947018167, -47.14473885383925
+    *   intermediaria: -22.87407510250004, -47.14630526383054
+    *   final: -22.875775335077922, -47.14411658137696
+    * */
 
     private GoogleMap mMap;
 
@@ -156,6 +166,11 @@ public class CorridaActivity extends AppCompatActivity
 
     private void requisicaoAguardando(){
         binding.buttonAceitarCorrida.setText("Aceitar corrida");
+        //Exibe marcador do motorista
+        adicionaMarcadorMotorista(localMotorista, motorista.getNome() );
+
+        mMap.moveCamera(
+                CameraUpdateFactory.newLatLngZoom( localMotorista, 20 ) );
     }
 
     private void requisicaoACaminho(){
@@ -264,7 +279,10 @@ public class CorridaActivity extends AppCompatActivity
                 double longitude = location.getLongitude();
                 localMotorista = new LatLng(latitude, longitude);
 
-                statusRequisicao = requisicao.getStatus();
+                //Atualizar Geofire
+                UsuarioFirebase.atualizarDadosLocalizacao( latitude, longitude );
+
+                //statusRequisicao = requisicao.getStatus();
                 alteraInterfaceStatusRequisicao( statusRequisicao );
 
             }

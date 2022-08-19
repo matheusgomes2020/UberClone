@@ -6,6 +6,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -97,6 +99,35 @@ public class UsuarioFirebase {
                 }
             });
         }
+
+    }
+
+    public static void atualizarDadosLocalizacao( Double lat, Double lon ){
+
+        //Define nó de local de usuário
+        DatabaseReference localUsuario = ConfiguracaoFirebase.getFirebaseDatabase()
+                .child( "local_usuario" );
+
+        GeoFire geoFire = new GeoFire( localUsuario );
+
+        //Recupera dados do usuário logado
+        Usuario usuarioLogado = UsuarioFirebase.getDadosUsuarioLogado();
+
+        //Configura localiza~ção do usuário
+        geoFire.setLocation(
+                usuarioLogado.getId(),
+                new GeoLocation(lat, lon),
+                new GeoFire.CompletionListener() {
+                    @Override
+                    public void onComplete(String key, DatabaseError error) {
+
+                        if ( error != null ){
+
+                        }
+
+                    }
+                }
+        );
 
     }
 
