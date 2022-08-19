@@ -26,25 +26,19 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
 
 
 import matheusgomes.cursoandroid.uber.R;
@@ -65,6 +59,8 @@ public class CorridaActivity extends AppCompatActivity
     *   inicial: -22.872710947018167, -47.14473885383925
     *   intermediaria: -22.87407510250004, -47.14630526383054
     *   final: -22.875775335077922, -47.14411658137696
+    * Encerramento intermediário: -22.87414269288448, -47.149738491208694
+    * Encerramento de corrida: -22.87514269288448, -47.149738491208694
     * */
 
     private GoogleMap mMap;
@@ -236,7 +232,7 @@ public class CorridaActivity extends AppCompatActivity
         centralizarDoisMarcadores(marcadorMotorista, marcadorPassageiro);
 
         //Inicia monitoramento do motorista / passageiro
-        iniciarMonitoramentoCorrida( passageiro, motorista );
+        iniciarMonitoramento( motorista, localpassageiro, Requisicao.STATUS_VIAGEM );
 
     }
 
@@ -259,11 +255,14 @@ public class CorridaActivity extends AppCompatActivity
         //Centraliza marcadores motorista / destino
         centralizarDoisMarcadores( marcadorMotorista, marcadorDestino );
 
+        //Inicia monitoramento do motorista / passageiro
+        iniciarMonitoramento( motorista, localDestino, Requisicao.STATUS_FINALIZADA );
+
 
 
     }
 
-    private void iniciarMonitoramentoCorrida( Usuario p, Usuario m ){
+    private void iniciarMonitoramento(Usuario uOrigem, LatLng localDestino, String status ){
 
         //Inicializar Geofire
         //Define nó de local de usuário
@@ -273,16 +272,16 @@ public class CorridaActivity extends AppCompatActivity
         GeoFire geoFire = new GeoFire( localUsuario );
 
         //Adiciona círculo no passageiro
-        Circle circulo = mMap.addCircle(
+        final Circle circulo = mMap.addCircle(
                 new CircleOptions()
-                        .center( localpassageiro )
+                        .center( localDestino )
                         .radius( 50 )//em metros
                         .fillColor(Color.argb( 90, 255, 153, 0 ) )
                         .strokeColor( Color.argb( 190, 255, 153, 0 ) )
         );
 
-        GeoQuery geoQuery = geoFire.queryAtLocation(
-                new GeoLocation( localpassageiro.latitude, localpassageiro.longitude ),
+        final GeoQuery geoQuery = geoFire.queryAtLocation(
+                new GeoLocation( localDestino.latitude, localDestino.longitude ),
                 0.05//em km (0.05 50 metros)
         );
 
@@ -290,11 +289,11 @@ public class CorridaActivity extends AppCompatActivity
             @Override
             public void onKeyEntered(String key, GeoLocation location) {
 
-                if ( key.equals( motorista.getId() ) ){
+                if ( key.equals( uOrigem.getId() ) ){
                     //Log.d( "onKeyEntered", "onKeyEntered: motorista está dentro da área!" );
 
                     //Altera status da requisicção
-                    requisicao.setStatus( Requisicao.STATUS_VIAGEM );
+                    requisicao.setStatus( status );
                     requisicao.atualizarStatus();
 
                     geoQuery.removeAllListeners();
