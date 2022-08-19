@@ -51,6 +51,7 @@ import matheusgomes.cursoandroid.uber.R;
 import matheusgomes.cursoandroid.uber.config.ConfiguracaoFirebase;
 import matheusgomes.cursoandroid.uber.databinding.ActivityCorridaBinding;
 import matheusgomes.cursoandroid.uber.helper.UsuarioFirebase;
+import matheusgomes.cursoandroid.uber.model.Destino;
 import matheusgomes.cursoandroid.uber.model.Requisicao;
 import matheusgomes.cursoandroid.uber.model.Usuario;
 
@@ -92,9 +93,13 @@ public class CorridaActivity extends AppCompatActivity
 
     private Marker marcadorPassageiro;
 
+    private Marker marcadorDestino;
+
     private String statusRequisicao;
 
     private Boolean requisicaoAtiva;
+
+    private Destino destino;
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityCorridaBinding binding;
@@ -121,9 +126,10 @@ public class CorridaActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
 
+
                 String status = statusRequisicao;
 
-                if ( status != null && status.isEmpty() ){
+                if ( status != null && !status.isEmpty() ){
 
                     String lat = "";
                     String lon = "";
@@ -134,12 +140,14 @@ public class CorridaActivity extends AppCompatActivity
                             lon = String.valueOf( localpassageiro.longitude );
                             break;
                         case Requisicao.STATUS_VIAGEM :
-
+                            lat = destino.getLatitude();
+                            lon = destino.getLongitude();
                             break;
                     }
 
                     //Abrir rota
                     String latLong = lat + "," + lon;
+                    Toast.makeText(CorridaActivity.this, latLong, Toast.LENGTH_SHORT).show();
                     Uri uri = Uri.parse("google.navigation:q=" + latLong + "&mode=d");
                     Intent i = new Intent(Intent.ACTION_VIEW, uri);
                     i.setPackage("com.google.android.apps.maps");
@@ -157,8 +165,8 @@ public class CorridaActivity extends AppCompatActivity
             Bundle extras = getIntent().getExtras();
             motorista = (Usuario) extras.getSerializable("motorista");
             localMotorista = new LatLng(
-                    Double.parseDouble(motorista.getLatidude()),
-                    Double.parseDouble(motorista.getLongitude())
+                    Double.parseDouble( String.valueOf(0.0) ),
+                    Double.parseDouble(String.valueOf(0.0) )
             );
             idRequisicao = extras.getString("idRequisicao");
             requisicaoAtiva = extras.getBoolean("requisicaoAtiva");
@@ -186,6 +194,7 @@ public class CorridaActivity extends AppCompatActivity
                     );
 
                     statusRequisicao = requisicao.getStatus();
+                    destino = requisicao.getDestino();
                     alteraInterfaceStatusRequisicao( statusRequisicao );
 
                 }
@@ -228,6 +237,28 @@ public class CorridaActivity extends AppCompatActivity
 
         //Inicia monitoramento do motorista / passageiro
         iniciarMonitoramentoCorrida( passageiro, motorista );
+
+    }
+
+    private void requisicaoViagem(){
+
+        //Altera interface
+        binding.fabRota.setVisibility( View.VISIBLE );
+        binding.buttonAceitarCorrida.setText( "A caminho do destino" );
+
+        //Exibe marcador do motorista
+        adicionaMarcadorMotorista( localMotorista, motorista.getNome() );
+
+        //Exibe marcador de destino
+        LatLng localDestino = new LatLng(
+                Double.parseDouble( destino.getLatitude() ),
+                Double.parseDouble( destino.getLongitude() )
+        );
+        adicionaMarcadorDestino( localDestino, "Destino" );
+
+        //Centraliza marcadores motorista / destino
+        centralizarDoisMarcadores( marcadorMotorista, marcadorDestino );
+
 
 
     }
@@ -324,6 +355,10 @@ public class CorridaActivity extends AppCompatActivity
             case Requisicao.STATUS_A_CAMINHO :
                 requisicaoACaminho();
                 break;
+
+            case Requisicao.STATUS_VIAGEM :
+                requisicaoViagem();
+                break;
         }
 
     }
@@ -353,6 +388,25 @@ public class CorridaActivity extends AppCompatActivity
                         .position(localizacao)
                         .title(titulo)
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.usuario))
+        );
+
+    }
+
+    private void adicionaMarcadorDestino(LatLng localizacao, String titulo){
+
+        if( marcadorPassageiro != null ){
+            marcadorPassageiro.remove();
+        }
+
+        if( marcadorDestino != null ){
+            marcadorDestino.remove();
+        }
+
+        marcadorDestino = mMap.addMarker(
+                new MarkerOptions()
+                        .position(localizacao)
+                        .title(titulo)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.destino))
         );
 
     }
