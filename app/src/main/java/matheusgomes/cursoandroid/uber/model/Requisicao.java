@@ -61,7 +61,21 @@ public class Requisicao {
         objeto.put( "status", getStatus() );
 
         requisicao.updateChildren( objeto );
+    }
 
+    public void atualizarLocalizacaoMotorista(){
+
+        DatabaseReference firebaseRef = ConfiguracaoFirebase.getFirebaseDatabase();
+        DatabaseReference requisicoes = firebaseRef.child( "requisicoes" );
+
+        DatabaseReference requisicao = requisicoes.child( getId() )
+                .child( "motorista" );
+
+        Map objeto = new HashMap();
+        objeto.put( "latitude", getMotorista().getLatidude() );
+        objeto.put( "longitude", getMotorista().getLongitude() );
+
+        requisicao.updateChildren( objeto );
 
     }
 

@@ -349,8 +349,6 @@ public class CorridaActivity extends AppCompatActivity
         }
     }
 
-
-
     private void adicionaMarcadorMotorista(LatLng localizacao, String titulo){
         if( marcadorMotorista != null )
             marcadorMotorista.remove();
@@ -425,6 +423,12 @@ public class CorridaActivity extends AppCompatActivity
 
                 //Atualizar Geofire
                 UsuarioFirebase.atualizarDadosLocalizacao( latitude, longitude );
+
+                //Atualizar localização do motorista
+                motorista.setLatidude( String.valueOf( latitude ) );
+                motorista.setLongitude( String.valueOf( longitude ) );
+                requisicao.setMotorista( motorista );
+                requisicao.atualizarLocalizacaoMotorista();
 
                 //statusRequisicao = requisicao.getStatus();
                 alteraInterfaceStatusRequisicao( statusRequisicao );
