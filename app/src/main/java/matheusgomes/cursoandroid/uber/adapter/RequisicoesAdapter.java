@@ -9,9 +9,12 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.List;
 
 import matheusgomes.cursoandroid.uber.R;
+import matheusgomes.cursoandroid.uber.helper.Local;
 import matheusgomes.cursoandroid.uber.model.Requisicao;
 import matheusgomes.cursoandroid.uber.model.Usuario;
 
@@ -41,7 +44,24 @@ public class RequisicoesAdapter extends RecyclerView.Adapter<RequisicoesAdapter.
         Usuario passageiro = requisicao.getPassageiro();
 
         holder.nome.setText( passageiro.getNome() );
-        holder.distancia.setText("1 km- aproximadamente");
+
+        if ( motorista != null ){
+
+            LatLng localPassageiro = new LatLng(
+                    Double.parseDouble( passageiro.getLatidude() ),
+                    Double.parseDouble( passageiro.getLongitude() )
+            );
+
+            LatLng localMotorista = new LatLng(
+                    Double.parseDouble( motorista.getLatidude() ),
+                    Double.parseDouble( motorista.getLongitude() )
+            );
+            float distancia = Local.calcularDistancia( localPassageiro, localMotorista );
+            String distanciaFormatada = Local.formatarDistancia( distancia );
+            holder.distancia.setText(distanciaFormatada  + "k- aproximadamente" );
+        }
+
+
 
     }
 
