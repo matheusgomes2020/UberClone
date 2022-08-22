@@ -64,39 +64,22 @@ public class CorridaActivity extends AppCompatActivity
     * */
 
     private GoogleMap mMap;
-
     private FirebaseAuth autenticacao;
-
     private LocationManager locationManager;
-
     private LocationListener locationListener;
-
     private LatLng localMotorista;
-
     private LatLng localpassageiro;
-
     private Requisicao requisicao;
-
     private Usuario motorista;
-
     private Usuario passageiro;
-
     private String idRequisicao;
-
     private DatabaseReference firbaseRef;
-
     private Marker marcadorMotorista;
-
     private Marker marcadorPassageiro;
-
     private Marker marcadorDestino;
-
     private String statusRequisicao;
-
     private Boolean requisicaoAtiva;
-
     private Destino destino;
-
     private AppBarConfiguration appBarConfiguration;
     private ActivityCorridaBinding binding;
 
@@ -121,12 +104,9 @@ public class CorridaActivity extends AppCompatActivity
         binding.fabRota.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-
                 String status = statusRequisicao;
 
                 if ( status != null && !status.isEmpty() ){
-
                     String lat = "";
                     String lon = "";
 
@@ -137,10 +117,8 @@ public class CorridaActivity extends AppCompatActivity
                             break;
                         case Requisicao.STATUS_VIAGEM :
                             lat = destino.getLatitude();
-                            lon = destino.getLongitude();
-                            break;
+                            lon = destino.getLongitude();break;
                     }
-
                     //Abrir rota
                     String latLong = lat + "," + lon;
                     Toast.makeText(CorridaActivity.this, latLong, Toast.LENGTH_SHORT).show();
@@ -148,13 +126,9 @@ public class CorridaActivity extends AppCompatActivity
                     Intent i = new Intent(Intent.ACTION_VIEW, uri);
                     i.setPackage("com.google.android.apps.maps");
                     startActivity( i );
-
-
                 }
-
             }
         });
-
         //Recupera dados do usuário
         if( getIntent().getExtras().containsKey("idRequisicao")
                 && getIntent().getExtras().containsKey("motorista") ){
@@ -168,11 +142,9 @@ public class CorridaActivity extends AppCompatActivity
             requisicaoAtiva = extras.getBoolean("requisicaoAtiva");
             verificaStatusRequisicao();
         }
-
     }
 
     private void verificaStatusRequisicao(){
-
         DatabaseReference requisicoes = firbaseRef.child("requisicoes")
                 .child( idRequisicao );
         requisicoes.addValueEventListener(new ValueEventListener() {
@@ -182,7 +154,6 @@ public class CorridaActivity extends AppCompatActivity
                 //Recupera requisição
                 requisicao = dataSnapshot.getValue(Requisicao.class);
                 if ( requisicao != null ){
-
                     passageiro = requisicao.getPassageiro();
                     localpassageiro = new LatLng(
                             Double.parseDouble(passageiro.getLatidude()),
@@ -192,30 +163,20 @@ public class CorridaActivity extends AppCompatActivity
                     statusRequisicao = requisicao.getStatus();
                     destino = requisicao.getDestino();
                     alteraInterfaceStatusRequisicao( statusRequisicao );
-
                 }
-
             }
-
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
             }
         });
-
-
     }
-
-
-
 
     private void requisicaoAguardando(){
         binding.buttonAceitarCorrida.setText("Aceitar corrida");
         //Exibe marcador do motorista
         adicionaMarcadorMotorista(localMotorista, motorista.getNome() );
-
-        mMap.moveCamera(
-                CameraUpdateFactory.newLatLngZoom( localMotorista, 20 ) );
+        centralizarMarcador( localMotorista );
     }
 
     private void requisicaoACaminho(){
@@ -233,7 +194,6 @@ public class CorridaActivity extends AppCompatActivity
 
         //Inicia monitoramento do motorista / passageiro
         iniciarMonitoramento( motorista, localpassageiro, Requisicao.STATUS_VIAGEM );
-
     }
 
     private void requisicaoViagem(){
@@ -257,9 +217,34 @@ public class CorridaActivity extends AppCompatActivity
 
         //Inicia monitoramento do motorista / passageiro
         iniciarMonitoramento( motorista, localDestino, Requisicao.STATUS_FINALIZADA );
+    }
 
+    private void requisicaoFinalizada() {
+        binding.fabRota.setVisibility( View.GONE );
 
+        if( marcadorMotorista != null ){
+            marcadorMotorista.remove();
+        }
 
+        if( marcadorDestino != null ){
+            marcadorDestino.remove();
+        }
+
+        //Exibe marcador de destino
+        LatLng localDestino = new LatLng(
+                Double.parseDouble( destino.getLatitude() ),
+                Double.parseDouble( destino.getLongitude() )
+        );
+        adicionaMarcadorDestino( localDestino, "Destino" );
+        centralizarMarcador( localDestino );
+
+        binding.buttonAceitarCorrida.setText( "Corrida finalizada - R$ 20" );
+
+    }
+
+    private void centralizarMarcador( LatLng local ){
+        mMap.moveCamera(
+                CameraUpdateFactory.newLatLngZoom( local, 20 ) );
     }
 
     private void iniciarMonitoramento(Usuario uOrigem, LatLng localDestino, String status ){
@@ -288,7 +273,6 @@ public class CorridaActivity extends AppCompatActivity
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
             public void onKeyEntered(String key, GeoLocation location) {
-
                 if ( key.equals( uOrigem.getId() ) ){
                     //Log.d( "onKeyEntered", "onKeyEntered: motorista está dentro da área!" );
 
@@ -298,36 +282,29 @@ public class CorridaActivity extends AppCompatActivity
 
                     geoQuery.removeAllListeners();
                     circulo.remove();
-
                 }
-
             }
 
             @Override
             public void onKeyExited(String key) {
-
             }
 
             @Override
             public void onKeyMoved(String key, GeoLocation location) {
-
             }
 
             @Override
             public void onGeoQueryReady() {
-
             }
 
             @Override
             public void onGeoQueryError(DatabaseError error) {
-
             }
         });
 
     }
 
     private void centralizarDoisMarcadores(Marker marcador1, Marker marcador2){
-
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
         builder.include( marcador1.getPosition() );
@@ -342,11 +319,9 @@ public class CorridaActivity extends AppCompatActivity
         mMap.moveCamera(
                 CameraUpdateFactory.newLatLngBounds(bounds,largura,altura,espacoInterno)
         );
-
     }
 
     private void alteraInterfaceStatusRequisicao( String status ){
-
         switch ( status ){
             case Requisicao.STATUS_AGUARDANDO :
                 requisicaoAguardando();
@@ -358,13 +333,15 @@ public class CorridaActivity extends AppCompatActivity
             case Requisicao.STATUS_VIAGEM :
                 requisicaoViagem();
                 break;
+            case Requisicao.STATUS_FINALIZADA :
+                requisicaoFinalizada();
+                break;
         }
-
     }
 
 
-    private void adicionaMarcadorMotorista(LatLng localizacao, String titulo){
 
+    private void adicionaMarcadorMotorista(LatLng localizacao, String titulo){
         if( marcadorMotorista != null )
             marcadorMotorista.remove();
 
@@ -378,7 +355,6 @@ public class CorridaActivity extends AppCompatActivity
     }
 
     private void adicionaMarcadorPassageiro(LatLng localizacao, String titulo){
-
         if( marcadorPassageiro != null )
             marcadorPassageiro.remove();
 
@@ -388,11 +364,9 @@ public class CorridaActivity extends AppCompatActivity
                         .title(titulo)
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.usuario))
         );
-
     }
 
     private void adicionaMarcadorDestino(LatLng localizacao, String titulo){
-
         if( marcadorPassageiro != null ){
             marcadorPassageiro.remove();
         }
@@ -407,7 +381,6 @@ public class CorridaActivity extends AppCompatActivity
                         .title(titulo)
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.destino))
         );
-
     }
 
     /**
@@ -429,7 +402,6 @@ public class CorridaActivity extends AppCompatActivity
     }
 
     private void recuperarLocalizacaoUsuario() {
-
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
         locationListener = new LocationListener() {
@@ -446,22 +418,18 @@ public class CorridaActivity extends AppCompatActivity
 
                 //statusRequisicao = requisicao.getStatus();
                 alteraInterfaceStatusRequisicao( statusRequisicao );
-
             }
 
             @Override
             public void onStatusChanged(String provider, int status, Bundle extras) {
-
             }
 
             @Override
             public void onProviderEnabled(String provider) {
-
             }
 
             @Override
             public void onProviderDisabled(String provider) {
-
             }
         };
 
@@ -474,12 +442,9 @@ public class CorridaActivity extends AppCompatActivity
                     locationListener
             );
         }
-
-
     }
 
     public void aceitarCorrida( View view ){
-
         //Configura requisicao
         requisicao = new Requisicao();
         requisicao.setId( idRequisicao );
@@ -487,26 +452,16 @@ public class CorridaActivity extends AppCompatActivity
         requisicao.setStatus( Requisicao.STATUS_A_CAMINHO );
 
         requisicao.atualizar();
-
-
-
     }
 
     @Override
     public boolean onSupportNavigateUp() {
-
         if ( requisicaoAtiva ){
-
             Toast.makeText(this, "Necessário encerrar a requisição atual!", Toast.LENGTH_SHORT).show();
-
         }else {
-
             Intent i = new Intent( CorridaActivity.this, RequisicoesActivity.class );
             startActivity( i );
-
         }
-
         return false;
-
     }
 }

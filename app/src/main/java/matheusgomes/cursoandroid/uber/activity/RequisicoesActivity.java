@@ -46,21 +46,13 @@ import matheusgomes.cursoandroid.uber.model.Usuario;
 public class RequisicoesActivity extends AppCompatActivity {
 
     private ActivityRequisicoesBinding binding;
-
     private FirebaseAuth autenticacao;
-
     private DatabaseReference firbaseRef;
-
     private List<Requisicao> listaRequisicoes = new ArrayList<>();
-
     private Usuario motorista;
-
     private RequisicoesAdapter adapter;
-
     private LocationManager locationManager;
-
     private LocationListener locationListener;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,13 +79,9 @@ public class RequisicoesActivity extends AppCompatActivity {
         binding.recyclerRequisicoes.setAdapter( adapter );
 
         recuperarRequisicoes();
-
-
-
     }
 
     private void adicionaEventoCliqueRecyclerView(){
-
         //Adiciona evento de clique no recycler
         binding.recyclerRequisicoes.addOnItemTouchListener(
                 new RecyclerItemClickListener(
@@ -102,25 +90,20 @@ public class RequisicoesActivity extends AppCompatActivity {
                         new RecyclerItemClickListener.OnItemClickListener() {
                             @Override
                             public void onItemClick(View view, int position) {
-
                                 Requisicao requisicao = listaRequisicoes.get( position );
                                 abrirTelaCorrida( requisicao.getId(), motorista, true );
-
                             }
 
                             @Override
                             public void onLongItemClick(View view, int position) {
-
                             }
 
                             @Override
                             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
                             }
                         }
                 )
         );
-
     }
 
     private  void abrirTelaCorrida( String idRequisicao, Usuario motorista, boolean requisicaoAtiva ){
@@ -152,39 +135,30 @@ public class RequisicoesActivity extends AppCompatActivity {
         requisicoesPesquisa.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-
                 for ( DataSnapshot ds: snapshot.getChildren() ){
-
                     Requisicao requisicao = ds.getValue( Requisicao.class );
-
                     if ( requisicao.getStatus().equals( Requisicao.STATUS_A_CAMINHO )
-                    || requisicao.getStatus().equals( Requisicao.STATUS_VIAGEM ) ) {
+                            || requisicao.getStatus().equals( Requisicao.STATUS_VIAGEM )
+                            || requisicao.getStatus().equals( Requisicao.STATUS_FINALIZADA )) {
 
                         motorista = requisicao.getMotorista();
                         abrirTelaCorrida( requisicao.getId(), motorista, false );
-
                     }
-
                 }
-
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
             }
         });
-
     }
 
     private void recuperarLocalizacaoUsuario() {
-
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
         locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-
                 //recuperar latitude e longitude
                 String latitude = String.valueOf( location.getLatitude() );
                 String longitude = String.valueOf( location.getLongitude() );
@@ -195,29 +169,22 @@ public class RequisicoesActivity extends AppCompatActivity {
                 if ( !latitude.isEmpty() && !longitude.isEmpty() ){
                     motorista.setLatidude( latitude );
                     motorista.setLongitude( longitude );
-
-
                     adicionaEventoCliqueRecyclerView();
-
                     locationManager.removeUpdates( locationListener );
                     adapter.notifyDataSetChanged();
                 }
-
             }
 
             @Override
             public void onStatusChanged(String provider, int status, Bundle extras) {
-
             }
 
             @Override
             public void onProviderEnabled(String provider) {
-
             }
 
             @Override
             public void onProviderDisabled(String provider) {
-
             }
         };
 
@@ -230,12 +197,9 @@ public class RequisicoesActivity extends AppCompatActivity {
                     locationListener
             );
         }
-
-
     }
 
     private void recuperarRequisicoes() {
-
         DatabaseReference requisicoes = firbaseRef.child( "requisicoes" );
 
         Query requisicaoPesquisa = requisicoes.orderByChild( "status" )
@@ -244,7 +208,6 @@ public class RequisicoesActivity extends AppCompatActivity {
         requisicaoPesquisa.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-
                 if ( snapshot.getChildrenCount() > 0 ){
                     binding.textResultado.setVisibility( View.GONE );
                     binding.recyclerRequisicoes.setVisibility( View.VISIBLE );
@@ -252,27 +215,20 @@ public class RequisicoesActivity extends AppCompatActivity {
                     binding.textResultado.setVisibility( View.VISIBLE );
                     binding.recyclerRequisicoes.setVisibility( View.GONE);
                 }
-
                 listaRequisicoes.clear();
 
                 for ( DataSnapshot ds : snapshot.getChildren() ){
-
                     Requisicao requisicao = ds.getValue( Requisicao.class );
-
                     listaRequisicoes.add( requisicao );
 
                 }
-
                 adapter.notifyDataSetChanged();
-
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
             }
         });
-
     }
 
     @Override
@@ -283,17 +239,12 @@ public class RequisicoesActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
         switch ( item.getItemId() ){
-
             case R.id.menuSair:
                 autenticacao.signOut();
                 finish();
                 break;
-
         }
-
         return super.onOptionsItemSelected(item);
     }
-
 }
