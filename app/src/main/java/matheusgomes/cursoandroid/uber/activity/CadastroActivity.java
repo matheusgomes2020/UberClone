@@ -29,7 +29,6 @@ public class CadastroActivity extends AppCompatActivity {
 
     private TextInputEditText campoNome, campoEmail, campoSenha;
     private Switch switchTipoUsuario;
-
     private FirebaseAuth autenticacao;
 
     @Override
@@ -42,11 +41,9 @@ public class CadastroActivity extends AppCompatActivity {
         campoEmail = findViewById(R.id.editCadastroEmail);
         campoSenha = findViewById(R.id.editCadastroSenha);
         switchTipoUsuario = findViewById(R.id.switchTipoUsuario);
-
     }
 
     public void validarCadastroUsuario( View view ){
-
         //Recuperar textos dos campos
         String textoNome  = campoNome.getText().toString();
         String textoEmail = campoEmail.getText().toString();
@@ -83,7 +80,6 @@ public class CadastroActivity extends AppCompatActivity {
     }
 
     public void cadastrarUsuario(final Usuario usuario ){
-
         autenticacao = ConfiguracaoFirebase.getFirebaseAutenticacao();
         autenticacao.createUserWithEmailAndPassword(
                 usuario.getEmail(),
@@ -148,7 +144,6 @@ public class CadastroActivity extends AppCompatActivity {
                             Toast.LENGTH_SHORT).show();
 
                 }
-
             }
         });
 
@@ -157,5 +152,4 @@ public class CadastroActivity extends AppCompatActivity {
     public String verificaTipoUsuario(){
         return switchTipoUsuario.isChecked() ? "M" : "P" ;
     }
-
 }

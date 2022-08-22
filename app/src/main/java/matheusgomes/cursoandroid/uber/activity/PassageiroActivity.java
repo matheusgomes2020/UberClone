@@ -61,21 +61,13 @@ public class PassageiroActivity extends AppCompatActivity
         implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-
     private FirebaseAuth autenticacao;
-
     private LocationManager locationManager;
-
     private LocationListener locationListener;
-
     private LatLng localPassageiro;
-
     private Boolean uberChamado = false;
-
     private DatabaseReference firbaseRef;
-
     private Requisicao requisicao;
-
     private AppBarConfiguration appBarConfiguration;
     private ActivityPassageiroBinding binding;
 
@@ -95,7 +87,6 @@ public class PassageiroActivity extends AppCompatActivity
 
         //Adiciona listener para status da requisição
         verificaStatusRequisicao();
-
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -120,7 +111,6 @@ public class PassageiroActivity extends AppCompatActivity
 
                     requisicao = ds.getValue( Requisicao.class );
                     lista.add( requisicao );
-
                 }
 
                 Collections.reverse( lista );
@@ -135,9 +125,7 @@ public class PassageiroActivity extends AppCompatActivity
                             binding.buttonChamarUber.setText( "Cancelar Uber" );
                             uberChamado = true;
                             break;
-
                     }
-
                 }
             }
 
@@ -148,7 +136,6 @@ public class PassageiroActivity extends AppCompatActivity
         });
 
     }
-
 
     /**
      * Manipulates the map once available.
@@ -165,15 +152,12 @@ public class PassageiroActivity extends AppCompatActivity
 
         //Recuperar localizacao do usuário
         recuperarLocalizacaoUsuario();
-
-
     }
 
     public void chamarUber( View view ){
 
         if ( !uberChamado ){//Uber não foi chamado
             String enderecoDEstino = binding.editDestino.getText().toString();
-
 
             if ( !enderecoDEstino.equals("")  || enderecoDEstino != null ){
 
@@ -212,26 +196,22 @@ public class PassageiroActivity extends AppCompatActivity
                             }).setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-
                                 }
                             });
 
                     AlertDialog dialog = builder.create();
                     dialog.show();
-
                 }
 
             }else {
                 Toast.makeText(this, "Informe o endereço de destino!", Toast.LENGTH_SHORT).show();
             }
 
-
         }else {
             //Cancelar a requisição
 
             uberChamado = false;
         }
-
     }
 
     private void salvarRequisicao(Destino destino) {
@@ -253,7 +233,6 @@ public class PassageiroActivity extends AppCompatActivity
     }
 
     private Address repuperarEndereco( String endereco ) {
-
         Geocoder geocoder = new Geocoder( this, Locale.getDefault() );
         try {
             List<Address> listaEnderecos = geocoder.getFromLocationName( endereco, 1 );
@@ -262,15 +241,11 @@ public class PassageiroActivity extends AppCompatActivity
                 Address address = listaEnderecos.get( 0 );
 
                return address;
-
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         return null;
-
     }
 
     private void recuperarLocalizacaoUsuario() {
@@ -280,7 +255,6 @@ public class PassageiroActivity extends AppCompatActivity
         locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-
                 //recuperar latitude e longitude
                 double latitude = location.getLatitude();
                 double longitude = location.getLongitude();
@@ -299,22 +273,18 @@ public class PassageiroActivity extends AppCompatActivity
                 mMap.moveCamera(
                         CameraUpdateFactory.newLatLngZoom( localPassageiro, 20 )
                 );
-
             }
 
             @Override
             public void onStatusChanged(String provider, int status, Bundle extras) {
-
             }
 
             @Override
             public void onProviderEnabled(String provider) {
-
             }
 
             @Override
             public void onProviderDisabled(String provider) {
-
             }
         };
 
@@ -327,10 +297,7 @@ public class PassageiroActivity extends AppCompatActivity
                     locationListener
             );
         }
-
-
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -340,16 +307,12 @@ public class PassageiroActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
         switch ( item.getItemId() ){
-
             case R.id.menuSair:
                 autenticacao.signOut();
                 finish();
                 break;
-
         }
-
         return super.onOptionsItemSelected(item);
     }
 }

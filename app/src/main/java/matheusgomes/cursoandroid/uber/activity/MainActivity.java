@@ -31,16 +31,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(matheusgomes.cursoandroid.uber.R.layout.activity_main);
 
-
         getSupportActionBar().hide();
 
-        //VAlidar permissões
+        //Validar permissões
         Permissoes.validarPermissoes( permissoes, this, 1 );
-
-        /*
-        autenticacao = ConfiguracaoFirebase.getFirebaseAutenticacao();
-        autenticacao.signOut();*/
-
     }
 
     public void abrirTelaLogin(View view){

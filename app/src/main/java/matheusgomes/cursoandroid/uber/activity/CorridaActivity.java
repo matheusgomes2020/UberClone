@@ -41,9 +41,12 @@ import androidx.core.app.ActivityCompat;
 import androidx.navigation.ui.AppBarConfiguration;
 
 
+import java.text.DecimalFormat;
+
 import matheusgomes.cursoandroid.uber.R;
 import matheusgomes.cursoandroid.uber.config.ConfiguracaoFirebase;
 import matheusgomes.cursoandroid.uber.databinding.ActivityCorridaBinding;
+import matheusgomes.cursoandroid.uber.helper.Local;
 import matheusgomes.cursoandroid.uber.helper.UsuarioFirebase;
 import matheusgomes.cursoandroid.uber.model.Destino;
 import matheusgomes.cursoandroid.uber.model.Requisicao;
@@ -221,6 +224,7 @@ public class CorridaActivity extends AppCompatActivity
 
     private void requisicaoFinalizada() {
         binding.fabRota.setVisibility( View.GONE );
+        requisicaoAtiva = false;
 
         if( marcadorMotorista != null ){
             marcadorMotorista.remove();
@@ -238,7 +242,13 @@ public class CorridaActivity extends AppCompatActivity
         adicionaMarcadorDestino( localDestino, "Destino" );
         centralizarMarcador( localDestino );
 
-        binding.buttonAceitarCorrida.setText( "Corrida finalizada - R$ 20" );
+        //Calcular distância
+        float distancia = Local.calcularDistancia( localpassageiro, localDestino );
+        float valor = distancia * 8; //4.56
+        DecimalFormat decimal = new DecimalFormat( "0.00" );
+        String resultado = decimal.format( valor );
+
+        binding.buttonAceitarCorrida.setText( "Corrida finalizada - R$ " + resultado );
 
     }
 
