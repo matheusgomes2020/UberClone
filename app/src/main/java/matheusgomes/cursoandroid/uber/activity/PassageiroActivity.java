@@ -21,7 +21,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -33,18 +32,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -71,7 +65,7 @@ public class PassageiroActivity extends AppCompatActivity
     private LocationListener locationListener;
     private LatLng localPassageiro;
     private LatLng localMotorista;
-    private Boolean uberChamado = false;
+    private Boolean cancelarUber = false;
     private DatabaseReference firbaseRef;
     private Requisicao requisicao;
     private AppBarConfiguration appBarConfiguration;
@@ -166,9 +160,11 @@ public class PassageiroActivity extends AppCompatActivity
     private void alteraInterfaceStatusRequisicao( String status ){
 
         if ( status != null && !status.isEmpty() ){
+            cancelarUber = false;
             switch ( status ){
                 case Requisicao.STATUS_AGUARDANDO :
                     requisicaoAguardando();
+
                     break;
                 case Requisicao.STATUS_A_CAMINHO :
                     requisicaoACaminho();
@@ -180,6 +176,10 @@ public class PassageiroActivity extends AppCompatActivity
                 case Requisicao.STATUS_FINALIZADA :
                     requisicaoFinalizada();
                     break;
+
+                case Requisicao.STATUS_CANCELADA:
+                    requisicaoCancelada();
+                    break;
             }
         }else {
             //Adiciona marcador passageiro
@@ -188,10 +188,18 @@ public class PassageiroActivity extends AppCompatActivity
         }
     }
 
+    private void requisicaoCancelada(){
+
+        binding.linearLayoutDestino.setVisibility( View.VISIBLE );
+        binding.buttonChamarUber.setText("Chamar Uber");
+        cancelarUber = false;
+
+    }
+
     private void requisicaoAguardando(){
         binding.linearLayoutDestino.setVisibility( View.GONE );
         binding.buttonChamarUber.setText( "Cancelar Uber" );
-        uberChamado = true;
+        cancelarUber = true;
 
         //Adiciona marcador de passageiro
         adicionaMarcadorPassageiro( localPassageiro, passageiro.getNome() );
@@ -201,7 +209,7 @@ public class PassageiroActivity extends AppCompatActivity
     private void requisicaoACaminho(){
         binding.linearLayoutDestino.setVisibility( View.GONE );
         binding.buttonChamarUber.setText("Motorista a caminho");
-        uberChamado = true;
+        binding.buttonChamarUber.setEnabled( false );
 
         //Adiciona marcador passageiro
         adicionaMarcadorPassageiro( localPassageiro, passageiro.getNome() );
@@ -217,6 +225,7 @@ public class PassageiroActivity extends AppCompatActivity
     private void requisicaoViagem(){
         binding.linearLayoutDestino.setVisibility( View.GONE );
         binding.buttonChamarUber.setText("A caminho do destino");
+        binding.buttonChamarUber.setEnabled( false );
 
         //Adiciona marcador motorista
         adicionaMarcadorMotorista( localMotorista, motorista.getNome() );
@@ -234,6 +243,7 @@ public class PassageiroActivity extends AppCompatActivity
 
     private void requisicaoFinalizada() {
         binding.linearLayoutDestino.setVisibility( View.GONE );
+        binding.buttonChamarUber.setEnabled( false );
 
         //Adiciona marcador de destino
         LatLng localDestino = new LatLng(
@@ -356,7 +366,15 @@ public class PassageiroActivity extends AppCompatActivity
 
     public void chamarUber( View view ){
 
-        if ( !uberChamado ){//Uber não foi chamado
+        //false -> uber não pode ser cancelado ainda
+        //true -> uber pode ser cancelado
+        if ( cancelarUber){//Uber pode ser cancelado
+
+            //Cancelar a requisição
+            requisicao.setStatus( Requisicao.STATUS_CANCELADA );
+            requisicao.atualizarStatus();
+
+        }else {
             String enderecoDEstino = binding.editDestino.getText().toString();
 
             if ( !enderecoDEstino.equals("")  || enderecoDEstino != null ){
@@ -390,7 +408,6 @@ public class PassageiroActivity extends AppCompatActivity
 
                                     //Salvar requisição
                                     salvarRequisicao(  destino );
-                                    uberChamado = true;
 
                                 }
                             }).setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
@@ -406,11 +423,6 @@ public class PassageiroActivity extends AppCompatActivity
             }else {
                 Toast.makeText(this, "Informe o endereço de destino!", Toast.LENGTH_SHORT).show();
             }
-
-        }else {
-            //Cancelar a requisição
-
-            uberChamado = false;
         }
     }
 

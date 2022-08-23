@@ -346,7 +346,20 @@ public class CorridaActivity extends AppCompatActivity
             case Requisicao.STATUS_FINALIZADA :
                 requisicaoFinalizada();
                 break;
+
+            case Requisicao.STATUS_CANCELADA :
+                requisicaoCancelada();
+                break;
         }
+
+    }
+
+    private  void requisicaoCancelada(){
+
+        Toast.makeText(this, "Requisicao foi cancelada pelo passageiro", Toast.LENGTH_SHORT).show();
+
+        startActivity( new Intent( CorridaActivity.this, RequisicoesActivity.class ) );
+
     }
 
     private void adicionaMarcadorMotorista(LatLng localizacao, String titulo){
